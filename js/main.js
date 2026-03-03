@@ -8,6 +8,9 @@ Vue.component('note-card', {
                     <input type="checkbox" v-model="item.done" @change="checkStatus" :disabled="item.done || isBlocked">
                 </li>
             </ol>
+            <p v-if="note.completedDate">
+                Дата выполнения: {{ note.completedDate }}
+            </p>
         </li>
     `,
     props: {
@@ -17,14 +20,19 @@ Vue.component('note-card', {
     methods: {
         checkStatus() {
             const total = this.note.listItems.length;
-            if (total === 0) return;
-
             const doneCount = this.note.listItems.filter(item => item.done).length;
             const percent = (doneCount / total) * 100;
 
-            if (percent === 100) this.note.status = 'done';
-            else if (percent > 50) this.note.status = 'process';
-            else this.note.status = 'new';
+            if (percent === 100) {
+                this.note.status = 'done';
+                this.note.completedDate = new Date().toLocaleString();
+            } 
+            else if (percent > 50) {
+                this.note.status = 'process';
+            }
+            else {
+                this.note.status = 'new';
+            }
         }
     }
 })
