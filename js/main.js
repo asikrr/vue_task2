@@ -17,14 +17,12 @@ Vue.component('note-card', {
 Vue.component('board', {
     template: `
         <div class="board-container">
-            <h1>Заметки</h1>
-            <ul>
-                <note-card 
-                    v-for="(note, index) in notes" 
-                    :key="index" 
-                    :note="note"
-                ></note-card>
-            </ul>
+            <h1>Ваши заметки</h1>
+            <div class="column-container">
+                <column title="Новые задачи" :notes="notes"></column>
+                <column title="В процессе" :notes="notes"></column>
+                <column title="Завершено" :notes="notes"></column>
+            </div>        
         </div>
     `,
     data() {
@@ -39,9 +37,29 @@ Vue.component('board', {
     }
 })
 
+Vue.component('column', {
+    template: `
+        <div class="column">
+            <h2>{{ title }}</h2>
+            <ul>
+                <note-card 
+                    v-for="(note, index) in notes" 
+                    :key="index" 
+                    :note="note"
+                ></note-card>
+            </ul>
+        </div>
+    `,
+    props: {
+        title: String,
+        notes: Array
+    }
+})
+
 Vue.component('note-form', {
     template: `
         <form @submit.prevent="onSubmit" class="note-form">
+        <h2>Добавление заметки</h2>
             <p>
                 <label for="title">Название:</label>
                 <input id="title" v-model="title" placeholder="Название заметки">
