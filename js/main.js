@@ -7,13 +7,30 @@ Vue.component('note-card', {
             <ol>
                 <li v-for="(item, index) in note.listItems" :key="index">
                     <span>{{ item.text }}</span>
-                    <input type="checkbox" v-model="item.done">
+                    <input type="checkbox" v-model="item.done" @change="checkStatus">
                 </li>
             </ol>
         </li>
     `,
     props: {
         note: Object
+    },
+    methods: {
+        checkStatus() {
+            const total = this.note.listItems.length;
+            if (total === 0) return;
+
+            const doneCount = this.note.listItems.filter(item => item.done).length;
+            const percent = (doneCount / total) * 100;
+
+            if (percent === 100) {
+                this.note.status = 'done';
+            } else if (percent > 50) {
+                this.note.status = 'process';
+            } else {
+                this.note.status = 'new';
+            }
+        }
     }
 })
 
@@ -22,9 +39,9 @@ Vue.component('board', {
         <div class="board-container">
             <h1>Ваши заметки</h1>
             <div class="column-container">
-                <column title="Новые задачи" :notes="notes"></column>
-                <column title="В процессе" :notes="notes"></column>
-                <column title="Завершено" :notes="notes"></column>
+                <column title="Новые задачи" :notes="newNotes"></column>
+                <column title="В процессе" :notes="processNotes"></column>
+                <column title="Завершено" :notes="doneNotes"></column>
             </div>        
         </div>
     `,
@@ -33,8 +50,20 @@ Vue.component('board', {
             notes: []
         }
     },
+    computed: {
+        newNotes() {
+            return this.notes.filter(note => note.status === 'new');
+        },
+        processNotes() {
+            return this.notes.filter(note => note.status === 'process');
+        },
+        doneNotes() {
+            return this.notes.filter(note => note.status === 'done');
+        }
+    },
     mounted() {
         eventBus.$on('note-submitted', noteCard => {
+            noteCard.status = 'new';
             this.notes.push(noteCard)
         })
     }
