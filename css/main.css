@@ -18,8 +18,7 @@ body {
 
 .board-container {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    gap: 50px;
 }
 
 .column-container {
@@ -83,15 +82,26 @@ button:hover {
     background-color: #e3a0c5;
 }
 
+.notes {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .note {
     background-color: #ffc7e6;
     border-radius: 20px;
     padding: 30px;
-    width: 200px;
+    width: 300px;
     list-style: none;
 }
 
 .note h3 {
     text-align: center;
     line-height: 90%;
+}
+
+.crossedText {
+    text-decoration: line-through;
+    color: gray;
 }

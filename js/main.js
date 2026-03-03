@@ -1,19 +1,18 @@
-let eventBus = new Vue()
-
 Vue.component('note-card', {
     template: `
         <li class="note">
             <h3>{{ note.title }}</h3>
             <ol>
                 <li v-for="(item, index) in note.listItems" :key="index">
-                    <span>{{ item.text }}</span>
-                    <input type="checkbox" v-model="item.done" @change="checkStatus">
+                    <span :class="{ crossedText: item.done }">{{ item.text }}</span>
+                    <input type="checkbox" v-model="item.done" @change="checkStatus" :disabled="item.done || isBlocked">
                 </li>
             </ol>
         </li>
     `,
     props: {
-        note: Object
+        note: Object,
+        isBlocked: Boolean
     },
     methods: {
         checkStatus() {
@@ -23,49 +22,10 @@ Vue.component('note-card', {
             const doneCount = this.note.listItems.filter(item => item.done).length;
             const percent = (doneCount / total) * 100;
 
-            if (percent === 100) {
-                this.note.status = 'done';
-            } else if (percent > 50) {
-                this.note.status = 'process';
-            } else {
-                this.note.status = 'new';
-            }
+            if (percent === 100) this.note.status = 'done';
+            else if (percent > 50) this.note.status = 'process';
+            else this.note.status = 'new';
         }
-    }
-})
-
-Vue.component('board', {
-    template: `
-        <div class="board-container">
-            <h1>Ваши заметки</h1>
-            <div class="column-container">
-                <column title="Новые задачи" :notes="newNotes"></column>
-                <column title="В процессе" :notes="processNotes"></column>
-                <column title="Завершено" :notes="doneNotes"></column>
-            </div>        
-        </div>
-    `,
-    data() {
-        return {
-            notes: []
-        }
-    },
-    computed: {
-        newNotes() {
-            return this.notes.filter(note => note.status === 'new');
-        },
-        processNotes() {
-            return this.notes.filter(note => note.status === 'process');
-        },
-        doneNotes() {
-            return this.notes.filter(note => note.status === 'done');
-        }
-    },
-    mounted() {
-        eventBus.$on('note-submitted', noteCard => {
-            noteCard.status = 'new';
-            this.notes.push(noteCard)
-        })
     }
 })
 
@@ -78,43 +38,46 @@ Vue.component('column', {
                     v-for="(note, index) in notes" 
                     :key="index" 
                     :note="note"
+                    :is-blocked="isBlocked"
                 ></note-card>
             </ul>
         </div>
     `,
     props: {
         title: String,
-        notes: Array
+        notes: Array,
+        isBlocked: Boolean
     }
 })
 
 Vue.component('note-form', {
     template: `
         <form @submit.prevent="onSubmit" class="note-form">
-        <h2>Добавление заметки</h2>
-            <p>
-                <label for="title">Название:</label>
-                <input id="title" v-model="title" placeholder="Название заметки">
+            <h2>Добавление заметки</h2>
+            <p v-if="disabled" style="color: red">
+                Достигнут лимит заметок в первой колонке!
             </p>
-
+            <p>
+                <label>Название:</label>
+                <input v-model="title" :disabled="disabled" placeholder="Название">
+            </p>
             <div v-if="listItems.length > 0">
-                <p>Текущий список:</p>
-                <ol>
-                    <li v-for="item in listItems">{{ item.text }}</li>
-                </ol>
+                <ol><li v-for="item in listItems">{{ item.text }}</li></ol>
             </div>
-
             <p>
-                <label for="list-item">Список:</label>
-                <input id="list-item" v-model="listItem" placeholder="Пункт списка" @keyup.enter="addListItem">
-                <button type="button" @click="addListItem">Добавить пункт</button>
+                <label>Задачи:</label>
+                <input v-model="listItem" :disabled="disabled" @keyup.enter="addListItem" placeholder="Пункт списка">
+                <button type="button" @click="addListItem" :disabled="disabled">+</button>
             </p>
-
-            <p>
-                <input type="submit" value="Сохранить заметку">
-            </p>
+            <input type="submit" value="Сохранить" :disabled="disabled">
         </form>
     `,
+    props: {
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
             title: '',
@@ -130,12 +93,15 @@ Vue.component('note-form', {
             }
         },
         onSubmit() {
-            let noteCard = {
-                title: this.title,
-                listItems: this.listItems
-            };
+            if (this.disabled) return;
 
-            eventBus.$emit('note-submitted', noteCard);
+            const note = {
+                title: this.title,
+                listItems: this.listItems,
+                status: 'new'
+            };
+            
+            this.$emit('add-note', note);
 
             this.title = '';
             this.listItem = '';
@@ -143,6 +109,52 @@ Vue.component('note-form', {
         }
     }
 });
+
+Vue.component('board', {
+    template: `
+        <div class="board-container">
+            <note-form 
+                @add-note="addNote"
+                :disabled="isFormBlocked"
+            ></note-form>
+            <div class="notes">
+                <h1>Ваши заметки</h1>
+                <div class="column-container">
+                    <column title="<=50% выполнения (лимит 3)" :notes="newNotes" :is-blocked="isSecondColumnFull"></column>
+                    <column title=">50% выполнения (лимит 5)" :notes="processNotes"></column>
+                    <column title="Завершено" :notes="doneNotes"></column>
+                </div>        
+            </div>
+        </div>
+    `,
+    data() {
+        return {
+            notes: []
+        }
+    },
+    methods: {
+        addNote(note) {
+            this.notes.push(note);
+        }
+    },
+    computed: {
+        newNotes() {
+            return this.notes.filter(note => note.status === 'new');
+        },
+        processNotes() {
+            return this.notes.filter(note => note.status === 'process');
+        },
+        doneNotes() {
+            return this.notes.filter(note => note.status === 'done');
+        },
+        isFormBlocked() {
+            return this.newNotes.length >= 3;
+        },
+        isSecondColumnFull() {
+            return this.processNotes.length >= 5;
+        }
+    }
+})
 
 let app = new Vue({
     el: '#app'
