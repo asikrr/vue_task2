@@ -5,7 +5,10 @@ Vue.component('note-card', {
         <li class="note">
             <h3>{{ note.title }}</h3>
             <ol>
-                <li v-for="item in note.listItems">{{ item }}</li>
+                <li v-for="(item, index) in note.listItems" :key="index">
+                    <span>{{ item.text }}</span>
+                    <input type="checkbox" v-model="item.done">
+                </li>
             </ol>
         </li>
     `,
@@ -68,7 +71,7 @@ Vue.component('note-form', {
             <div v-if="listItems.length > 0">
                 <p>Текущий список:</p>
                 <ol>
-                    <li v-for="item in listItems">{{ item }}</li>
+                    <li v-for="item in listItems">{{ item.text }}</li>
                 </ol>
             </div>
 
@@ -85,16 +88,16 @@ Vue.component('note-form', {
     `,
     data() {
         return {
-            title: null,
-            listItem: null,
-            listItems: [],
+            title: '',
+            listItem: '', 
+            listItems: []
         }
     },
     methods: {
         addListItem() {
             if (this.listItem) {
-                this.listItems.push(this.listItem);
-                this.listItem = null;
+                this.listItems.push({ text: this.listItem, done: false });
+                this.listItem = ''; 
             }
         },
         onSubmit() {
@@ -105,8 +108,8 @@ Vue.component('note-form', {
 
             eventBus.$emit('note-submitted', noteCard);
 
-            this.title = null;
-            this.listItem = null;
+            this.title = '';
+            this.listItem = '';
             this.listItems = [];
         }
     }
