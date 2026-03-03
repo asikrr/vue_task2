@@ -13,8 +13,8 @@
 <div id="app">
     <note-form></note-form>
     <ul>
-        <li v-for="note in notes">
-            <h2>{{ note.title }}</h2>
+        <li v-for="note in notes" class="note">
+            <h3>{{ note.title }}</h3>
             <ol>
                 <li v-for="item in note.listItems">{{ item }}</li>
             </ol>

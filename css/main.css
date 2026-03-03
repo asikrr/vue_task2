@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Tahoma, sans-serif;
+    margin: auto;
+    max-width: 1440px;
+    padding-top: 100px;
+}
+
+#app {
+    display: flex;
+    gap: 50px;
+}
+
+.note-form,
+.note-form p {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 200px;
+}
+
+.note-form input {
+    padding: 10px;
+    border: 1px solid #ffc7e6;
+    border-radius: 10px;
+    outline: none;
+}
+
+.note-form input:focus {
+    border-color: #e3a0c5;
+}
+
+.note-form input[type=submit],
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+}
+
+.note-form input[type=submit] {
+    background-color: #a6dc99;
+}
+
+.note-form input[type=submit]:hover {
+    cursor: pointer;
+    background-color: #80b672;
+}
+
+button {
+    background-color: #ffc7e6;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: #e3a0c5;
+}
+
+.note {
+    background-color: #ffc7e6;
+    border-radius: 20px;
+    padding: 30px;
+    width: 200px;
+    list-style: none;
+}
+
+.note h3 {
+    text-align: center;
+    line-height: 90%;
+}

@@ -2,7 +2,7 @@ let eventBus = new Vue()
 
 Vue.component('note-form', {
     template: `
-        <form @submit.prevent="onSubmit">
+        <form @submit.prevent="onSubmit" class="note-form">
             <p>
                 <label for="title">Название:</label>
                 <input id="title" v-model="title" placeholder="Название заметки">
