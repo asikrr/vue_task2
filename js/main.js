@@ -3,8 +3,8 @@ Vue.component('note-card', {
         <li class="note">
             <h3>{{ note.title }}</h3>
             <ol>
-                <li v-for="(item, index) in note.listItems" :key="index">
-                    <span :class="{ crossedText: item.done }">{{ item.text }}</span>
+                <li v-for="(item, index) in note.listItems" :key="index" :class="{ crossedText: item.done }">
+                    <span>{{ item.text }}</span>
                     <input type="checkbox" v-model="item.done" @change="checkStatus" :disabled="item.done || isBlocked">
                 </li>
             </ol>
@@ -65,11 +65,27 @@ Vue.component('note-form', {
                 <ol><li v-for="item in listItems">{{ item.text }}</li></ol>
             </div>
             <p>
-                <label>Задачи:</label>
-                <input v-model="listItem" :disabled="disabled" @keyup.enter="addListItem" placeholder="Пункт списка">
-                <button type="button" @click="addListItem" :disabled="disabled">+</button>
+                <label>Задачи ({{ listItems.length }}/5):</label>
+                <input 
+                    v-model="listItem" 
+                    :disabled="disabled || listItems.length >= 5" 
+                    @keyup.enter="addListItem" 
+                    placeholder="Пункт списка"
+                >
+                <button 
+                    type="button" 
+                    @click="addListItem" 
+                    :disabled="disabled || listItems.length >= 5"
+                >+</button>
             </p>
-            <input type="submit" value="Сохранить" :disabled="disabled">
+            <p v-if="listItems.length < 3">
+                Нужно минимум 3 пункта
+            </p>
+            <input 
+                type="submit" 
+                value="Сохранить" 
+                :disabled="disabled || listItems.length < 3"
+            >
         </form>
     `,
     props: {
@@ -93,8 +109,6 @@ Vue.component('note-form', {
             }
         },
         onSubmit() {
-            if (this.disabled) return;
-
             const note = {
                 title: this.title,
                 listItems: this.listItems,
@@ -102,7 +116,6 @@ Vue.component('note-form', {
             };
             
             this.$emit('add-note', note);
-
             this.title = '';
             this.listItem = '';
             this.listItems = [];
