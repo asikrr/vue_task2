@@ -11,7 +11,15 @@
 </head>
 <body>
 <div id="app">
-
+    <note-form></note-form>
+    <ul>
+        <li v-for="note in notes">
+            <h2>{{ note.title }}</h2>
+            <ol>
+                <li v-for="item in note.listItems">{{ item }}</li>
+            </ol>
+        </li>
+    </ul>
 </div>
 </body>
 </html>
