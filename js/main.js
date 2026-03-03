@@ -1,5 +1,44 @@
 let eventBus = new Vue()
 
+Vue.component('note-card', {
+    template: `
+        <li class="note">
+            <h3>{{ note.title }}</h3>
+            <ol>
+                <li v-for="item in note.listItems">{{ item }}</li>
+            </ol>
+        </li>
+    `,
+    props: {
+        note: Object
+    }
+})
+
+Vue.component('board', {
+    template: `
+        <div class="board-container">
+            <h1>Заметки</h1>
+            <ul>
+                <note-card 
+                    v-for="(note, index) in notes" 
+                    :key="index" 
+                    :note="note"
+                ></note-card>
+            </ul>
+        </div>
+    `,
+    data() {
+        return {
+            notes: []
+        }
+    },
+    mounted() {
+        eventBus.$on('note-submitted', noteCard => {
+            this.notes.push(noteCard)
+        })
+    }
+})
+
 Vue.component('note-form', {
     template: `
         <form @submit.prevent="onSubmit" class="note-form">
@@ -56,15 +95,5 @@ Vue.component('note-form', {
 });
 
 let app = new Vue({
-    el: '#app',
-    data(){
-        return {
-            notes: []
-        }
-    },
-    mounted() {
-        eventBus.$on('note-submitted', noteCard => {
-            this.notes.push(noteCard)
-        })
-    },
+    el: '#app'
 })

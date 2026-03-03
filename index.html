@@ -12,14 +12,7 @@
 <body>
 <div id="app">
     <note-form></note-form>
-    <ul>
-        <li v-for="note in notes" class="note">
-            <h3>{{ note.title }}</h3>
-            <ol>
-                <li v-for="item in note.listItems">{{ item }}</li>
-            </ol>
-        </li>
-    </ul>
+    <board></board>
 </div>
 </body>
 </html>
