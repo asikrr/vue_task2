@@ -153,6 +153,19 @@ Vue.component('board', {
             notes: []
         }
     },
+    mounted() {
+        if (localStorage.getItem('notes')) {
+            this.notes = JSON.parse(localStorage.getItem('notes'));
+        }
+    },
+    watch: {
+        notes: {
+            handler(newNotes) {
+                localStorage.setItem('notes', JSON.stringify(newNotes));
+            },
+            deep: true
+        }
+    },
     methods: {
         addNote(note) {
             this.notes.push(note);
