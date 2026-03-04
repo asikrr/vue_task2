@@ -1,10 +1,10 @@
 Vue.component('note-card', {
     template: `
-        <li class="note">
+        <li class="note" :class="{ noteDone: note.status == 'done' }">
             <h3>{{ note.title }}</h3>
             <ol>
-                <li v-for="(item, index) in note.listItems" :key="index" :class="{ crossedText: item.done }">
-                    <span>{{ item.text }}</span>
+                <li v-for="(item, index) in note.listItems" :key="index">
+                    <span :class="{ crossedText: item.done }">{{ item.text }}</span>
                     <input type="checkbox" v-model="item.done" @change="checkStatus" :disabled="item.done || isBlocked">
                 </li>
             </ol>
@@ -62,8 +62,8 @@ Vue.component('note-form', {
     template: `
         <form @submit.prevent="onSubmit" class="note-form">
             <h2>Добавление заметки</h2>
-            <p v-if="disabled" style="color: red">
-                Достигнут лимит заметок в первой колонке!
+            <p v-if="disabled" class="dangerText">
+                Достигнут лимит заметок в первом столбце
             </p>
             <p>
                 <label>Название:</label>
@@ -87,7 +87,7 @@ Vue.component('note-form', {
                 >+</button>
             </p>
             <p v-if="listItems.length < 3">
-                Нужно минимум 3 пункта
+                Минимум 3 пункта
             </p>
             <input 
                 type="submit" 
@@ -168,7 +168,7 @@ Vue.component('board', {
     },
     methods: {
         addNote(note) {
-            this.notes.push(note);
+            this.notes.unshift(note);
         }
     },
     computed: {
