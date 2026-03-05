@@ -8,17 +8,26 @@ body {
     font-family: Tahoma, sans-serif;
     margin: auto;
     max-width: 1440px;
-    padding-top: 100px;
-    background-color: #f5f5f5;
-    color: #3f3328;
+    padding-top: 70px;
+    background-color: #fffafa;
+    color: #3b2529;
 }
 
 h2, h3 {
     font-weight: 500;
 }
 
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 18px;
+}
+
 ol {
     padding-left: 20px;
+    overflow-wrap: break-word; 
 }
 
 #app {
@@ -28,13 +37,16 @@ ol {
 
 .board-container {
     display: flex;
-    gap: 100px;
+    align-items: flex-start;
+    gap: 70px;
     width: 100%;
 }
 
 .column-container {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .column {
@@ -42,6 +54,9 @@ ol {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    background-color: #fff1f3;
+    padding: 20px;
+    border-radius: 20px;
 }
 
 .column h2 {
@@ -54,23 +69,31 @@ ol {
     gap: 20px;
 }
 
+.note-form {
+    background-color: #faedef;
+    padding: 20px;
+    border-radius: 20px;
+    width: 350px;
+}
+
 .note-form,
 .note-form p {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    width: 230px;
 }
 
 .note-form input {
     padding: 10px;
-    border: 1px solid #dfbc9b;
+    border: 1px solid #df9ba6;
     border-radius: 10px;
     outline: none;
+    background-color: #fff9f9;
 }
 
 .note-form input:focus {
-    border-color: #c4a180;
+    border-color: #be6171;
+    background-color: #fff;
 }
 
 .note-form input[type=submit],
@@ -90,17 +113,22 @@ button {
 }
 
 button {
-    background-color: #dfbc9b;
+    background-color: #df9ba6;
 }
 
 button:not(:disabled):hover {
     cursor: pointer;
-    background-color: #c4a180;
+    background-color: #be6171;
+    color: #fff;
 }
 
 input[type=checkbox] {
     cursor: pointer;
     accent-color: #b0c48b;
+}
+
+input[type=checkbox]:checked {
+    cursor: default;
 }
 
 .notes {
@@ -117,8 +145,8 @@ input[type=checkbox] {
     padding: 30px;
     width: 300px;
     gap: 10px;
-    background-color: #fff;
-    border: 1px solid #dfbc9b;
+    background-color: #fffefe;
+    border: 1px solid #df9ba6;
     list-style: none;
 }
 
@@ -140,7 +168,8 @@ input[type=checkbox] {
 
 .note h3 {
     text-align: center;
-    line-height: 90%;
+    overflow-wrap: break-word; 
+    line-height: 1;
 }
 
 .crossedText {
@@ -155,4 +184,8 @@ input[type=checkbox] {
 
 .dangerText {
     color: #c52b2b;
+}
+
+::selection {
+    background-color: #df9ba6;
 }

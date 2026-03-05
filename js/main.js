@@ -67,7 +67,7 @@ Vue.component('note-form', {
             </p>
             <p>
                 <label>Название:</label>
-                <input v-model="title" :disabled="disabled" placeholder="Название">
+                <input v-model="title" :disabled="disabled" placeholder="Название" required>
             </p>
             <div v-if="listItems.length > 0">
                 <ol><li v-for="item in listItems">{{ item.text }}</li></ol>
