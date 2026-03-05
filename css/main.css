@@ -44,7 +44,7 @@ ol {
 
 .column-container {
     display: flex;
-    justify-content: space-between;
+    gap: 60px;
     align-items: flex-start;
     width: 100%;
 }
@@ -57,6 +57,7 @@ ol {
     background-color: #fff1f3;
     padding: 20px;
     border-radius: 20px;
+    width: 100%;
 }
 
 .column h2 {
