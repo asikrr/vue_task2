@@ -5,30 +5,32 @@ Vue.component('note-card', {
             <ol>
                 <li v-for="(item, index) in note.listItems" :key="index">
                     <span :class="{ crossedText: item.done }">{{ item.text }}</span>
-                    <input type="checkbox" v-model="item.done" @change="checkStatus" :disabled="item.done || isBlocked">
+                    <input 
+                        type="checkbox" 
+                        v-model="item.done" 
+                        @change="checkStatus" 
+                        :disabled="isBlocked || item.done"
+                    >
                 </li>
             </ol>
-            <p v-if="note.completedDate">
-                Дата выполнения: {{ note.completedDate }}
-            </p>
+            <p v-if="note.completedDate">Дата: {{ note.completedDate }}</p>
         </li>
     `,
     props: {
         note: Object,
-        isBlocked: Boolean
+        isBlocked: Boolean,
+        processCount: Number
     },
     methods: {
         checkStatus() {
             const total = this.note.listItems.length;
-            const doneCount = this.note.listItems.filter(item => item.done).length;
+
+            const doneCount = this.note.listItems.filter(i => i.done).length;
             const percent = (doneCount / total) * 100;
 
             if (percent === 100) {
                 this.note.status = 'done';
                 this.note.completedDate = new Date().toLocaleString();
-            } 
-            else if (percent > 50) {
-                this.note.status = 'process';
             }
             else {
                 this.note.status = 'new';
@@ -47,6 +49,7 @@ Vue.component('column', {
                     :key="index" 
                     :note="note"
                     :is-blocked="isBlocked"
+                    :process-count="processCount"
                 ></note-card>
             </ul>
         </div>
@@ -54,7 +57,8 @@ Vue.component('column', {
     props: {
         title: String,
         notes: Array,
-        isBlocked: Boolean
+        isBlocked: Boolean,
+        processCount: Number
     }
 })
 
@@ -133,14 +137,18 @@ Vue.component('note-form', {
 Vue.component('board', {
     template: `
         <div class="board-container">
-            <note-form 
-                @add-note="addNote"
-                :disabled="isFormBlocked"
-            ></note-form>
+            <note-form @add-note="addNote" :disabled="newNotes.length >= 3"></note-form>
+            
             <div class="notes">
                 <h1>Ваши заметки</h1>
                 <div class="column-container">
-                    <column title="<=50% выполнения (лимит 3)" :notes="newNotes" :is-blocked="isSecondColumnFull"></column>
+                    <column 
+                        title="<=50% выполнения (лимит 3)" 
+                        :notes="newNotes" 
+                        :is-blocked="isFirstColumnLocked"
+                        :process-count="processNotes.length"
+                    ></column>
+                    
                     <column title=">50% выполнения (лимит 5)" :notes="processNotes"></column>
                     <column title="Завершено" :notes="doneNotes"></column>
                 </div>        
@@ -159,32 +167,55 @@ Vue.component('board', {
     },
     watch: {
         notes: {
-            handler(newNotes) {
-                localStorage.setItem('notes', JSON.stringify(newNotes));
-            },
+            handler(val) {
+                    localStorage.setItem('notes', JSON.stringify(val));
+                },
             deep: true
+        },
+        processNotes: {
+            handler(newList) {
+                if (newList.length < 5) {
+                    this.notes.forEach(note => {
+                        if (note.status === 'new') {
+                            const total = note.listItems.length;
+                            const done = note.listItems.filter(i => i.done).length;
+                            if ((done / total) * 100 > 50) {
+                                note.status = 'process';
+                            }
+                        }
+                    });
+                }
+            }
         }
     },
     methods: {
-        addNote(note) {
-            this.notes.unshift(note);
-        }
+        addNote(note) { this.notes.unshift(note); }
     },
     computed: {
         newNotes() {
-            return this.notes.filter(note => note.status === 'new');
+            return this.notes.filter(n => n.status === 'new');
         },
         processNotes() {
-            return this.notes.filter(note => note.status === 'process');
+            return this.notes.filter(n => n.status === 'process');
         },
         doneNotes() {
-            return this.notes.filter(note => note.status === 'done');
+            return this.notes.filter(n => n.status === 'done');
         },
-        isFormBlocked() {
-            return this.newNotes.length >= 3;
-        },
-        isSecondColumnFull() {
-            return this.processNotes.length >= 5;
+        isFirstColumnLocked() {
+            if (this.processNotes.length < 5) {
+                return false;
+            }
+            for (let i = 0; i < this.newNotes.length; i++) {
+                const note = this.newNotes[i];
+
+                const doneCount = note.listItems.filter(item => item.done).length;
+                const percent = (doneCount / note.listItems.length) * 100;
+
+                if (percent > 50) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 })
