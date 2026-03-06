@@ -32,6 +32,11 @@ Vue.component('note-card', {
                 this.note.status = 'done';
                 this.note.completedDate = new Date().toLocaleString();
             }
+            else if (percent > 50) {
+                if (this.processCount < 5) {
+                    this.note.status = 'process';
+                }
+            }
             else {
                 this.note.status = 'new';
             }

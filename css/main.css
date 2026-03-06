@@ -5,9 +5,24 @@
 }
 
 body {
+    font-family: Tahoma, sans-serif;
     margin: auto;
     max-width: 1440px;
     padding-top: 70px;
+    background-color: #fffafa;
+    color: #3b2529;
+}
+
+h2, h3 {
+    font-weight: 500;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 18px;
 }
 
 ol {
@@ -29,7 +44,7 @@ ol {
 
 .column-container {
     display: flex;
-    gap: 60px;
+    justify-content: space-between;
     align-items: flex-start;
     width: 100%;
 }
@@ -39,7 +54,10 @@ ol {
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    width: 100%;
+    background-color: #fff1f3;
+    padding: 20px;
+    border-radius: 20px;
+    width: 330px;
 }
 
 .column h2 {
@@ -52,6 +70,60 @@ ol {
     gap: 20px;
 }
 
+.note-form {
+    background-color: #faedef;
+    padding: 20px;
+    border-radius: 20px;
+    width: 350px;
+}
+
+.note-form,
+.note-form p {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.note-form input {
+    padding: 10px;
+    border: 1px solid #df9ba6;
+    border-radius: 10px;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.note-form input[type=submit],
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+}
+
+.note-form input[type=submit] {
+    background-color: #b0c48b;
+}
+
+.note-form input[type=submit]:not(:disabled):hover {
+    cursor: pointer;
+}
+
+button {
+    background-color: #df9ba6;
+}
+
+button:not(:disabled):hover {
+    cursor: pointer;
+}
+
+input[type=checkbox] {
+    cursor: pointer;
+    accent-color: #b0c48b;
+}
+
+input[type=checkbox]:checked {
+    cursor: default;
+}
+
 .notes {
     display: flex;
     flex-direction: column;
@@ -62,9 +134,25 @@ ol {
 .note {
     display: flex;
     flex-direction: column;
+    border-radius: 20px;
+    padding: 30px;
     width: 300px;
     gap: 10px;
+    background-color: #fffefe;
+    border: 1px solid #df9ba6;
     list-style: none;
+}
+
+.note > li {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.note ol {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .note ol li span {    
@@ -73,13 +161,24 @@ ol {
 
 .note h3 {
     text-align: center;
-    overflow-wrap: break-word;
+    overflow-wrap: break-word; 
+    line-height: 1;
 }
 
 .crossedText {
     text-decoration: line-through;
+    color: gray;
+}
+
+.noteDone {
+    background-color: #d9e6c1;
+    border: 1px solid #b0c48b;
 }
 
 .dangerText {
     color: #c52b2b;
+}
+
+::selection {
+    background-color: #df9ba6;
 }
