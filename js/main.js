@@ -77,7 +77,6 @@ Vue.component('note-form', {
                 <input 
                     v-model="listItem" 
                     :disabled="disabled || listItems.length >= 5" 
-                    @keyup.enter="addListItem" 
                     placeholder="Пункт списка"
                 >
                 <button 
