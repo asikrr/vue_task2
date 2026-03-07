@@ -139,6 +139,27 @@ Vue.component('note-form', {
     }
 });
 
+Vue.component('search-form', {
+    template: `
+        <form @submit.prevent="onSearch" class="search-form">
+            <label for="search">Поиск карточки</label>
+            <input type="text" id="search" v-model="query" placeholder="Название карточки">
+            <button type="submit">Поиск</button>
+        </form>
+    `,
+    data() {
+        return {
+            query: '',
+        }
+    },
+    methods: {
+        onSearch() {
+            this.$emit('search', this.query.toLowerCase());
+            this.query = '';
+        }
+    }
+})
+
 Vue.component('board', {
     template: `
         <div class="board-container">
@@ -156,13 +177,23 @@ Vue.component('board', {
                     
                     <column title=">50% выполнения (лимит 5)" :notes="processNotes"></column>
                     <column title="Завершено" :notes="doneNotes"></column>
-                </div>        
+                </div>    
+                <search-form @search="handleSearch"></search-form>
+                <p>Карточки по запросу {{ searchText }}:</p>
+                <ul v-for="note in matchesSearch">
+                    <p>Статус: {{ note.status }}</p>
+                    <p>Процент выполнения: {{ getPercent(note) }}%</p>
+                    <note-card 
+                        :note="note"
+                    ></note-card>
+                </ul>    
             </div>
         </div>
     `,
     data() {
         return {
-            notes: []
+            notes: [],
+            searchText: ''
         }
     },
     mounted() {
@@ -194,7 +225,16 @@ Vue.component('board', {
         }
     },
     methods: {
-        addNote(note) { this.notes.unshift(note); }
+        addNote(note) {
+            this.notes.unshift(note);
+        },
+        handleSearch(text) {
+            this.searchText = text;
+        },
+        getPercent(note) {
+            const done = note.listItems.filter(item => item.done).length;
+            return Math.round((done / note.listItems.length) * 100);
+        }
     },
     computed: {
         newNotes() {
@@ -221,6 +261,10 @@ Vue.component('board', {
                 }
             }
             return false;
+        },
+        matchesSearch() {
+            if (!this.searchText) return [];
+            return this.notes.filter(note => note.title.toLowerCase().includes(this.searchText));
         }
     }
 })

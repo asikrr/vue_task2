@@ -78,13 +78,18 @@ ol {
 }
 
 .note-form,
-.note-form p {
+.note-form p,
+.search-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.note-form input {
+.search-form {
+    width: 250px;
+}
+
+input {
     padding: 10px;
     border: 1px solid #df9ba6;
     border-radius: 10px;
