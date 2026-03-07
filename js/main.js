@@ -1,6 +1,13 @@
 Vue.component('note-card', {
     template: `
-        <li class="note" :class="{ noteDone: note.status == 'done' }">
+        <li class="note" 
+            :class="{ noteDone: note.status == 'done' }"
+            draggable="true"
+            @dragstart="startDrag"
+            @drop="onDrop"
+            @dragover.prevent
+            @dragenter.prevent
+        >
             <h3>{{ note.title }}</h3>
             <ol>
                 <li v-for="(item, index) in note.listItems" :key="index">
@@ -24,22 +31,25 @@ Vue.component('note-card', {
     methods: {
         checkStatus() {
             const total = this.note.listItems.length;
-
             const doneCount = this.note.listItems.filter(i => i.done).length;
             const percent = (doneCount / total) * 100;
 
             if (percent === 100) {
                 this.note.status = 'done';
                 this.note.completedDate = new Date().toLocaleString();
-            }
-            else if (percent > 50) {
+            } else if (percent > 50) {
                 if (this.processCount < 5) {
                     this.note.status = 'process';
                 }
-            }
-            else {
+            } else {
                 this.note.status = 'new';
             }
+        },
+        startDrag(event) {
+            this.$emit('drag-start', this.note);
+        },
+        onDrop(event) {
+            this.$emit('drop-target', this.note);
         }
     }
 })
@@ -55,6 +65,8 @@ Vue.component('column', {
                     :note="note"
                     :is-blocked="isBlocked"
                     :process-count="processCount"
+                    @drag-start="onDragStart"
+                    @drop-target="onDropTarget"
                 ></note-card>
             </ul>
         </div>
@@ -64,6 +76,14 @@ Vue.component('column', {
         notes: Array,
         isBlocked: Boolean,
         processCount: Number
+    },
+    methods: {
+        onDragStart(note) {
+            this.$emit('reorder-start', note);
+        },
+        onDropTarget(targetNote) {
+            this.$emit('reorder-end', targetNote);
+        }
     }
 })
 
@@ -113,15 +133,18 @@ Vue.component('note-form', {
     data() {
         return {
             title: '',
-            listItem: '', 
+            listItem: '',
             listItems: []
         }
     },
     methods: {
         addListItem() {
             if (this.listItem) {
-                this.listItems.push({ text: this.listItem, done: false });
-                this.listItem = ''; 
+                this.listItems.push({
+                    text: this.listItem,
+                    done: false
+                });
+                this.listItem = '';
             }
         },
         onSubmit() {
@@ -130,7 +153,7 @@ Vue.component('note-form', {
                 listItems: this.listItems,
                 status: 'new'
             };
-            
+
             this.$emit('add-note', note);
             this.title = '';
             this.listItem = '';
@@ -173,27 +196,43 @@ Vue.component('board', {
                         :notes="newNotes" 
                         :is-blocked="isFirstColumnLocked"
                         :process-count="processNotes.length"
+                        @reorder-start="handleDragStart"
+                        @reorder-end="handleDrop"
                     ></column>
                     
-                    <column title=">50% выполнения (лимит 5)" :notes="processNotes"></column>
-                    <column title="Завершено" :notes="doneNotes"></column>
+                    <column 
+                        title=">50% выполнения (лимит 5)" 
+                        :notes="processNotes"
+                        @reorder-start="handleDragStart"
+                        @reorder-end="handleDrop"
+                    ></column>
+                    
+                    <column 
+                        title="Завершено" 
+                        :notes="doneNotes"
+                        @reorder-start="handleDragStart"
+                        @reorder-end="handleDrop"
+                    ></column>
                 </div>    
                 <search-form @search="handleSearch"></search-form>
-                <p>Карточки по запросу {{ searchText }}:</p>
-                <ul v-for="note in matchesSearch">
-                    <p>Статус: {{ note.status }}</p>
-                    <p>Процент выполнения: {{ getPercent(note) }}%</p>
-                    <note-card 
-                        :note="note"
-                    ></note-card>
-                </ul>    
+                <p v-if="searchText">Карточки по запросу {{ searchText }}:</p>
+                <div v-for="note in matchesSearch">
+                    <div class="search-card-container">
+                        <note-card 
+                            :note="note"
+                        ></note-card>
+                        <p>Статус: {{ formatStatus(note.status) }}</p>
+                        <p>Процент выполнения: {{ getPercent(note) }}%</p>
+                    </div>
+                </div>    
             </div>
         </div>
     `,
     data() {
         return {
             notes: [],
-            searchText: ''
+            searchText: '',
+            draggedNote: null
         }
     },
     mounted() {
@@ -204,8 +243,8 @@ Vue.component('board', {
     watch: {
         notes: {
             handler(val) {
-                    localStorage.setItem('notes', JSON.stringify(val));
-                },
+                localStorage.setItem('notes', JSON.stringify(val));
+            },
             deep: true
         },
         processNotes: {
@@ -234,6 +273,35 @@ Vue.component('board', {
         getPercent(note) {
             const done = note.listItems.filter(item => item.done).length;
             return Math.round((done / note.listItems.length) * 100);
+        },
+        handleDragStart(note) {
+            this.draggedNote = note;
+        },
+        handleDrop(targetNote) {       
+            const draggedIndex = this.notes.indexOf(this.draggedNote);
+            const targetIndex = this.notes.indexOf(targetNote);
+
+            if (draggedIndex > -1 && targetIndex > -1) {
+                this.notes.splice(draggedIndex, 1);
+                const newTargetIndex = this.notes.indexOf(targetNote);
+
+                if (draggedIndex < targetIndex) {
+                     this.notes.splice(newTargetIndex + 1, 0, this.draggedNote);
+                } 
+                else {
+                     this.notes.splice(newTargetIndex, 0, this.draggedNote);
+                }
+            }
+            
+            this.draggedNote = null;
+        },
+        formatStatus(status) {
+            const ruStatus = {
+                'new': 'Новая',
+                'process': 'В процессе',
+                'done': 'Завершено'
+            };
+            return ruStatus[status];
         }
     },
     computed: {
